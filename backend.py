@@ -9,18 +9,21 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import mysql.connector
+import os
+# os not necessary if locally hosting
 
 # create flask app
 app = Flask(__name__)
 CORS(app)
 
-# database
+# database (remove os.getenv() entirely if you are not using Railway.app, localhost runs fine with just "DB_HOST")
 def db():
     return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="password",
-        database="group4project"
+        host=os.getenv("DB_HOST"),
+        user=os.getenv("DB_USERNAME"),
+        password=os.getenv("DB_PASSWORD"),
+        database=os.getenv("DB_NAME"),
+        port=int(os.getenv("DB_PORT"))
     )
     
 # get platform
