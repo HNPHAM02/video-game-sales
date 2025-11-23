@@ -112,42 +112,34 @@ def get_games():
     conn = db()
     cur = conn.cursor(dictionary=True)
 
-    sql = """
+    count_sql = """
+        SELECT COUNT(*) AS total
+        FROM Games g
+        WHERE g.name LIKE %s
+    """
+    cur.execute(count_sql, (f"%{search}%",))
+    total = cur.fetchone()["total"]
+
+    data_sql = f"""
         SELECT 
-            g.gameID,
             g.name AS name,
             p.name AS platform,
             ge.name AS genre,
-            SUM(s.salesValue) AS sales,
-            COUNT(*) OVER() AS total_count
+            COALESCE(SUM(s.salesValue), 0) AS sales
         FROM Games g
         JOIN Platforms p ON g.platformID = p.platformID
         JOIN Genres ge ON g.genreID = ge.genreID
-        JOIN Sales s ON g.gameID = s.gameID
-        WHERE 1=1
-    """
-
-    params = {}
-
-    if search:
-        sql += " AND g.name LIKE %(search)s"
-        params["search"] = f"%{search}%"
-
-    if sort not in ["name", "platform", "genre", "sales"]:
-        sort = "sales"
-    if order not in ["ASC", "DESC"]:
-        order = "DESC"
-
-    sql += f"""
+        LEFT JOIN Sales s ON g.gameID = s.gameID
+        WHERE g.name LIKE %s
         GROUP BY g.gameID
         ORDER BY {sort} {order}
-        LIMIT {limit} OFFSET {offset};
+        LIMIT %s OFFSET %s
     """
 
-    cur.execute(sql, params)
+    cur.execute(data_sql, (f"%{search}%", limit, offset))
     rows = cur.fetchall()
 
-    total = rows[0]["total_count"] if rows else 0
+    conn.close()
 
     return jsonify({
         "data": rows,
@@ -155,7 +147,6 @@ def get_games():
         "limit": limit,
         "total": total
     })
-
 
 # test
 @app.route("/")
@@ -168,6 +159,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
