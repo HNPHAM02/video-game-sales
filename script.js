@@ -1,4 +1,4 @@
-const api = "https://video-game-sales-production.up.railway.app/";
+const api = "https://video-game-sales-production.up.railway.app";
 
 // -------------------------------
 // HTML ELEMENTS
