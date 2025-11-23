@@ -22,7 +22,7 @@ def db():
 #        host="ballast.proxy.rlwy.net",
 #        user="root",
 #        password="password",
-#        database="db"
+#        database="db",
 #        port=33186
     return mysql.connector.connect(
         host=os.getenv("DB_HOST"),
@@ -119,4 +119,5 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
