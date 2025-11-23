@@ -1,7 +1,7 @@
 const api = "https://video-game-sales-production.up.railway.app";
 
 // -------------------------------
-// HTML ELEMENTS
+// GLOBAL VARIABLES
 // -------------------------------
 const region = document.getElementById("region");
 const platform = document.getElementById("platform");
@@ -9,13 +9,15 @@ const genre = document.getElementById("genre");
 const update = document.getElementById("updates");
 
 let salesChart;
+let selectedGames = [];
 
 let page = 1;
 let limit = 50;
 let sort = "sales";
 let order = "DESC";
-let selectedGames = [];
 
+// -------------------------------
+// API HELPER
 // -------------------------------
 async function getJSON(url) {
     const res = await fetch(url);
@@ -26,18 +28,22 @@ async function getJSON(url) {
 // LOAD FILTERS
 // -------------------------------
 async function loadFilters() {
+    // Regions
     const regionList = ["NA", "EU", "JP", "Other"];
     regionList.forEach(r => {
         region.innerHTML += `<option value="${r}">${r}</option>`;
     });
 
-    const genres = ["Action","Sports","Misc","Role-Playing","Shooter","Simulation","Racing",
-                    "Fighting","Adventure","Platform","Puzzle","Strategy"];
+    // Genres
+    const genres = ["Action","Sports","Misc","Role-Playing","Shooter",
+                    "Simulation","Racing","Fighting","Adventure",
+                    "Platform","Puzzle","Strategy"];
 
     genre.innerHTML += genres.map(g =>
         `<option value="${g}">${g}</option>`
     ).join("");
 
+    // Platforms (TomSelect)
     const platforms = await getJSON(`${api}/platforms`);
     new TomSelect("#platform", {
         options: platforms.map(p => ({ value: p, text: p })),
@@ -47,13 +53,17 @@ async function loadFilters() {
 }
 
 // -------------------------------
-// LOAD GAME TABLE
+// LOAD GAME TABLE (PAGINATED)
 // -------------------------------
 async function loadGames() {
     const search = document.getElementById("search").value;
 
     const params = new URLSearchParams({
-        page, limit, sort, order, search
+        page,
+        limit,
+        sort,
+        order,
+        search
     });
 
     const res = await getJSON(`${api}/games?${params.toString()}`);
@@ -63,27 +73,32 @@ async function loadGames() {
 
     res.data.forEach(game => {
         const tr = document.createElement("tr");
-
         tr.innerHTML = `
           <td>${game.name}</td>
           <td>${game.platform}</td>
           <td>${game.genre}</td>
           <td>${game.sales.toFixed(2)}</td>
-          <td><button class="addBtn" data-id="${game.gameID}" 
-                      data-name="${game.name}"
-                      data-sales="${game.sales}">
-              + Chart</button></td>
+          <td>
+            <button class="addBtn"
+              data-name="${game.name}"
+              data-sales="${game.sales}">
+              + Chart
+            </button>
+          </td>
         `;
-
         tbody.appendChild(tr);
     });
 
+    const totalPages = Math.ceil(res.total / limit);
     document.getElementById("pageInfo").textContent =
-        `Page ${res.page} of ${Math.ceil(res.total / limit)}`;
+        `Page ${page} of ${totalPages}`;
+
+    document.getElementById("prevPage").disabled = page <= 1;
+    document.getElementById("nextPage").disabled = page >= totalPages;
 }
 
 // -------------------------------
-// LOAD SALES FOR INITIAL CHART
+// LOAD INITIAL DASHBOARD SALES
 // -------------------------------
 async function loadSalesData() {
     const params = new URLSearchParams({
@@ -117,9 +132,8 @@ function renderChart(data) {
             responsive: true,
             plugins: {
                 legend: {
-                    onClick: (evt, legendItem) => {
-                        const index = legendItem.index;
-                        selectedGames.splice(index, 1);
+                    onClick: (evt, item) => {
+                        selectedGames.splice(item.index, 1);
                         renderChart(selectedGames);
                     }
                 }
@@ -149,19 +163,22 @@ document.addEventListener("click", (event) => {
 // -------------------------------
 document.querySelectorAll("#gamesTable th[data-sort]").forEach(th => {
     th.addEventListener("click", () => {
-        const newSort = th.dataset.sort;
-        if (sort === newSort) {
+        const s = th.dataset.sort;
+
+        if (sort === s) {
             order = order === "ASC" ? "DESC" : "ASC";
         } else {
-            sort = newSort;
+            sort = s;
             order = "ASC";
         }
+
+        page = 1;
         loadGames();
     });
 });
 
 // -------------------------------
-// PAGINATION
+// PAGINATION BUTTONS
 // -------------------------------
 document.getElementById("prevPage").onclick = () => {
     if (page > 1) {
@@ -176,20 +193,34 @@ document.getElementById("nextPage").onclick = () => {
 };
 
 // -------------------------------
-// INIT
+// SEARCH FUNCTIONALITY
+// -------------------------------
+document.getElementById("search").addEventListener("input", () => {
+    page = 1;
+    loadGames();
+});
+
+// -------------------------------
+// INITIALIZATION
 // -------------------------------
 window.onload = async () => {
     await loadFilters();
     await loadGames();
-    const initial = await loadSalesData();
 
-    // Format initial data for dynamic chart
-    selectedGames = initial.map(d => ({ name: d.name, sales: d.salesValue }));
+    const initial = await loadSalesData();
+    selectedGames = initial.map(d => ({
+        name: d.name,
+        sales: d.salesValue
+    }));
+
     renderChart(selectedGames);
 };
 
 update.addEventListener("click", async () => {
     const updated = await loadSalesData();
-    selectedGames = updated.map(d => ({ name: d.name, sales: d.salesValue }));
+    selectedGames = updated.map(d => ({
+        name: d.name,
+        sales: d.salesValue
+    }));
     renderChart(selectedGames);
 });
