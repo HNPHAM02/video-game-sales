@@ -11,6 +11,7 @@ Start by opening MySQL server:
 When attempting to populate RawData, first replace "GET UR OWN FILE DIRECTORY" with your local filepath to RawData.csv. If that doesn't work, try, in this order:
 - Run `SHOW VARIABLES LIKE 'secure_file_priv';` in MySQL to find secure_file_priv uploads folder (and drop in RawData.csv)
 - Use Table Data Import Wizard to import data for ETL to run.
+- As an absolute last resort, run force_rawdata.sql instead.
 If data import initially fails, run only the script afterwards again, starting from `INSERT INTO Platforms (name)`.
 
 If you are running om something like Railway.app, after running the ETL locally, export the DB: MySQL Workbench → Server → Data Export → SQL File and import it.
