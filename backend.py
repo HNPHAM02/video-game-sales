@@ -18,6 +18,12 @@ CORS(app)
 
 # database (remove os.getenv() entirely if you are not using Railway.app, localhost runs fine with just "DB_HOST")
 def db():
+#    return mysql.connector.connect(
+#        host="ballast.proxy.rlwy.net",
+#        user="root",
+#        password="password",
+#        database="db"
+#        port=33186
     return mysql.connector.connect(
         host=os.getenv("DB_HOST"),
         user=os.getenv("DB_USERNAME"),
@@ -107,6 +113,10 @@ def get_sales():
 def home():
     return "Backend is running!"
 
-# main
+# main (uncomment if localhost)
+#if __name__ == "__main__":
+#    app.run(host="0.0.0.0", port=5000, debug=True)
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
+
