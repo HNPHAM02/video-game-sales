@@ -1,0 +1,152 @@
+-- HUNG ADDED TO CREATE DB v
+CREATE DATABASE video-game-sales;
+USE video-game-sales;
+
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS Sales;
+DROP TABLE IF EXISTS Ratings;
+DROP TABLE IF EXISTS Games;
+DROP TABLE IF EXISTS Platforms;
+DROP TABLE IF EXISTS Publishers;
+DROP TABLE IF EXISTS Genres;
+DROP TABLE IF EXISTS RawData;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+
+
+CREATE TABLE Platforms (
+    platformID INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100)
+);
+
+CREATE TABLE Publishers (
+    publisherID INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(200)
+);
+
+CREATE TABLE Genres (
+    genreID INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100)
+);
+
+CREATE TABLE Games (
+    gameID INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255),
+    yearOfRelease INT,
+    genreID INT,
+    publisherID INT,
+    platformID INT,
+    FOREIGN KEY (genreID) REFERENCES Genres(genreID),
+    FOREIGN KEY (publisherID) REFERENCES Publishers(publisherID),
+    FOREIGN KEY (platformID) REFERENCES Platforms(platformID)
+);
+
+CREATE TABLE Sales (
+    saleID INT AUTO_INCREMENT PRIMARY KEY,
+    gameID INT,
+    region VARCHAR(20),
+    salesValue FLOAT,
+    FOREIGN KEY (gameID) REFERENCES Games(gameID)
+);
+
+CREATE TABLE Ratings (
+    ratingID INT AUTO_INCREMENT PRIMARY KEY,
+    gameID INT,
+    criticScore INT,
+    userScore FLOAT,
+    esrbRating VARCHAR(10),
+    FOREIGN KEY (gameID) REFERENCES Games(gameID)
+);
+
+
+
+CREATE TABLE RawData (
+    Name VARCHAR(255),
+    Platform VARCHAR(100),
+    Year_of_Release INT,
+    Genre VARCHAR(100),
+    Publisher VARCHAR(200),
+    NA_Sales FLOAT,
+    EU_Sales FLOAT,
+    JP_Sales FLOAT,
+    Other_Sales FLOAT,
+    Global_Sales FLOAT,
+    Critic_score INT,
+    User_score FLOAT,
+    Developer VARCHAR(200),
+    Rating VARCHAR(10)
+);
+
+
+
+LOAD DATA INFILE 'GET UR OWN FILE DIRECTORY' --If this doesn't work, you could also use the table data import wizard tool (right click on the rawdata table)  
+INTO TABLE RawData
+FIELDS TERMINATED BY ','
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 ROWS;
+
+
+
+INSERT INTO Platforms (name)
+SELECT DISTINCT Platform
+FROM RawData
+WHERE Platform IS NOT NULL;
+
+INSERT INTO Publishers (name)
+SELECT DISTINCT Publisher
+FROM RawData
+WHERE Publisher IS NOT NULL;
+
+INSERT INTO Genres (name)
+SELECT DISTINCT Genre
+FROM RawData
+WHERE Genre IS NOT NULL;
+
+INSERT INTO Games (name, yearOfRelease, genreID, publisherID, platformID)
+SELECT
+    Name,
+    Year_of_Release,
+    (SELECT genreID FROM Genres WHERE name = RawData.Genre LIMIT 1),
+    (SELECT publisherID FROM Publishers WHERE name = RawData.Publisher LIMIT 1),
+    (SELECT platformID FROM Platforms WHERE name = RawData.Platform LIMIT 1)
+FROM RawData;
+
+
+
+INSERT INTO Sales (gameID, region, salesValue)
+SELECT gameID, 'NA', NA_Sales
+FROM Games
+JOIN RawData ON Games.name = RawData.Name
+WHERE NA_Sales IS NOT NULL;
+
+INSERT INTO Sales (gameID, region, salesValue)
+SELECT gameID, 'EU', EU_Sales
+FROM Games
+JOIN RawData ON Games.name = RawData.Name
+WHERE EU_Sales IS NOT NULL;
+
+INSERT INTO Sales (gameID, region, salesValue)
+SELECT gameID, 'JP', JP_Sales
+FROM Games
+JOIN RawData ON Games.name = RawData.Name
+WHERE JP_Sales IS NOT NULL;
+
+INSERT INTO Sales (gameID, region, salesValue)
+SELECT gameID, 'Other', Other_Sales
+FROM Games
+JOIN RawData ON Games.name = RawData.Name
+WHERE Other_Sales IS NOT NULL;
+
+
+
+INSERT INTO Ratings (gameID, criticScore, userScore, esrbRating)
+SELECT 
+    gameID,
+    Critic_score,
+    User_score,
+    Rating
+FROM Games
+JOIN RawData ON Games.name = RawData.Name;
