@@ -13,7 +13,7 @@ If data import initially fails, run only the script afterwards again, starting f
 
 Start by installing Python, and running `Run the following in cmd: pip install flask flask-cors mysql-connector-python` in cmd.
 Replace the database information with your server: `python backend.py`
-After this step, your command prompt should tell you something along the lines of "Running on http://127.0.0.1:5000/", you may plug this (or localhost:5000) into your broser to see if you receive json data.
+After this step, your command prompt should tell you something along the lines of `Running on http://127.0.0.1:5000/`, you may plug this (or localhost:5000) into your browser to see if you receive json data, something like `http://localhost:5000/sales` should work.
 
 ### 3. Run your frontend
 
