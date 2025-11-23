@@ -1,6 +1,6 @@
 -- HUNG ADDED TO CREATE DB v
-CREATE DATABASE video-game-sales;
-USE video-game-sales;
+CREATE DATABASE group4project;
+USE group4project;
 
 SET FOREIGN_KEY_CHECKS = 0;
 
@@ -150,3 +150,4 @@ SELECT
     Rating
 FROM Games
 JOIN RawData ON Games.name = RawData.Name;
+
