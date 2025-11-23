@@ -1,6 +1,7 @@
 -- HUNG ADDED TO CREATE DB v
 CREATE DATABASE group4project;
 USE group4project;
+-- SHOW VARIABLES LIKE 'secure_file_priv';
 
 SET FOREIGN_KEY_CHECKS = 0;
 
@@ -81,14 +82,14 @@ CREATE TABLE RawData (
 
 
 
-LOAD DATA INFILE 'GET UR OWN FILE DIRECTORY' --If this doesn't work, you could also use the table data import wizard tool (right click on the rawdata table)  
+LOAD DATA INFILE 'GET UR OWN FILE DIRECTORY'
 INTO TABLE RawData
 FIELDS TERMINATED BY ','
 ENCLOSED BY '"'
 LINES TERMINATED BY '\n'
 IGNORE 1 ROWS;
 
-
+-- If the previous line errors, use data import wizard, and then run the following:
 
 INSERT INTO Platforms (name)
 SELECT DISTINCT Platform
@@ -150,4 +151,5 @@ SELECT
     Rating
 FROM Games
 JOIN RawData ON Games.name = RawData.Name;
+
 
