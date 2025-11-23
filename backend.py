@@ -35,9 +35,6 @@ def db():
 # get platform
 @app.route("/platforms")
 def get_platforms():
-    """
-    Returns list of platform names for TomSelect autocomplete.
-    """
     conn = db()
     cur = conn.cursor()
 
@@ -52,12 +49,6 @@ def get_platforms():
 # get sales
 @app.route("/sales")
 def get_sales():
-    """
-    Returns top-selling games filtered by:
-      - region
-      - platform name
-      - genre name
-    """
     region = request.args.get("region")
     platform = request.args.get("platform")
     genre = request.args.get("genre")
@@ -107,8 +98,68 @@ def get_sales():
 
     return jsonify(rows)
 
-# test
+# full game rows (page sort)
+@app.route("/games")
+def get_games():
+    page = int(request.args.get("page", 1))
+    limit = int(request.args.get("limit", 50))
+    search = request.args.get("search", "")
+    sort = request.args.get("sort", "sales")
+    order = request.args.get("order", "DESC")
 
+    offset = (page - 1) * limit
+
+    conn = db()
+    cur = conn.cursor(dictionary=True)
+
+    base_sql = """
+        SELECT 
+            g.gameID,
+            g.name AS name,
+            p.name AS platform,
+            ge.name AS genre,
+            SUM(s.salesValue) AS sales
+        FROM Games g
+        JOIN Platforms p ON g.platformID = p.platformID
+        JOIN Genres ge ON g.genreID = ge.genreID
+        JOIN Sales s ON g.gameID = s.gameID
+        WHERE 1=1
+    """
+
+    params = {}
+
+    if search:
+        base_sql += " AND g.name LIKE %(search)s"
+        params["search"] = f"%{search}%"
+
+    if sort not in ["name", "platform", "genre", "sales"]:
+        sort = "sales"
+    if order not in ["ASC", "DESC"]:
+        order = "DESC"
+
+    base_sql += f"""
+        GROUP BY g.gameID
+        ORDER BY {sort} {order}
+        LIMIT {limit} OFFSET {offset};
+    """
+
+    cur.execute(base_sql, params)
+    rows = cur.fetchall()
+
+    cur.execute("SELECT COUNT(*) AS total FROM Games;")
+    total = cur.fetchone()["total"]
+
+    cur.close()
+    conn.close()
+
+    return jsonify({
+        "data": rows,
+        "page": page,
+        "limit": limit,
+        "total": total
+    })
+
+# test
 @app.route("/")
 def home():
     return "Backend is running!"
@@ -119,5 +170,6 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
