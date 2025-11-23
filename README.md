@@ -1,5 +1,9 @@
 CSE335 group project on video game sales.
 
+https://hnpham02.github.io/video-game-sales/
+
+BACKEND will only be running for 30 days after 11/23/2025, during my trial period of Railway.app.
+
 ## For running locally:
 
 ### 1. Run the ETL
