@@ -10,34 +10,35 @@ const update = document.getElementById("updates");
 
 let salesChart;
 
-// -------------------------------
-// API HELPERS
+let page = 1;
+let limit = 50;
+let sort = "sales";
+let order = "DESC";
+let selectedGames = [];
+
 // -------------------------------
 async function getJSON(url) {
-    const response = await fetch(url);
-    return response.json();
+    const res = await fetch(url);
+    return res.json();
 }
 
 // -------------------------------
-// POPULATE FILTERS (DROPDOWNS + AUTOFILL)
+// LOAD FILTERS
 // -------------------------------
 async function loadFilters() {
-
-    // ---- Regions dropdown ----
     const regionList = ["NA", "EU", "JP", "Other"];
     regionList.forEach(r => {
         region.innerHTML += `<option value="${r}">${r}</option>`;
     });
 
-    // ---- Genres dropdown ----
-    const genres = ["Action", "Sports", "Misc", "Role-Playing", "Shooter", "Simulation", "Racing", "Fighting", "Adventure", "Platform", "Puzzle", "Strategy"];
+    const genres = ["Action","Sports","Misc","Role-Playing","Shooter","Simulation","Racing",
+                    "Fighting","Adventure","Platform","Puzzle","Strategy"];
+
     genre.innerHTML += genres.map(g =>
         `<option value="${g}">${g}</option>`
     ).join("");
 
-    // ---- Platforms autocomplete ----
     const platforms = await getJSON(`${api}/platforms`);
-
     new TomSelect("#platform", {
         options: platforms.map(p => ({ value: p, text: p })),
         maxItems: 1,
@@ -46,7 +47,43 @@ async function loadFilters() {
 }
 
 // -------------------------------
-// FETCH SALES DATA FOR CHART
+// LOAD GAME TABLE
+// -------------------------------
+async function loadGames() {
+    const search = document.getElementById("search").value;
+
+    const params = new URLSearchParams({
+        page, limit, sort, order, search
+    });
+
+    const res = await getJSON(`${api}/games?${params.toString()}`);
+
+    const tbody = document.querySelector("#gamesTable tbody");
+    tbody.innerHTML = "";
+
+    res.data.forEach(game => {
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+          <td>${game.name}</td>
+          <td>${game.platform}</td>
+          <td>${game.genre}</td>
+          <td>${game.sales.toFixed(2)}</td>
+          <td><button class="addBtn" data-id="${game.gameID}" 
+                      data-name="${game.name}"
+                      data-sales="${game.sales}">
+              + Chart</button></td>
+        `;
+
+        tbody.appendChild(tr);
+    });
+
+    document.getElementById("pageInfo").textContent =
+        `Page ${res.page} of ${Math.ceil(res.total / limit)}`;
+}
+
+// -------------------------------
+// LOAD SALES FOR INITIAL CHART
 // -------------------------------
 async function loadSalesData() {
     const params = new URLSearchParams({
@@ -59,7 +96,7 @@ async function loadSalesData() {
 }
 
 // -------------------------------
-// CHART CREATION
+// RENDER CHART
 // -------------------------------
 function renderChart(data) {
     const ctx = document.getElementById("salesChart");
@@ -72,12 +109,21 @@ function renderChart(data) {
             labels: data.map(d => d.name),
             datasets: [{
                 label: "Sales",
-                data: data.map(d => d.salesValue),
+                data: data.map(d => d.sales),
                 backgroundColor: "rgba(54, 162, 235, 0.6)"
             }]
         },
         options: {
             responsive: true,
+            plugins: {
+                legend: {
+                    onClick: (evt, legendItem) => {
+                        const index = legendItem.index;
+                        selectedGames.splice(index, 1);
+                        renderChart(selectedGames);
+                    }
+                }
+            },
             scales: {
                 y: { beginAtZero: true }
             }
@@ -86,19 +132,64 @@ function renderChart(data) {
 }
 
 // -------------------------------
-// HANDLE UPDATE BUTTON
+// ADD TO CHART
 // -------------------------------
-async function updateDashboard() {
-    const data = await loadSalesData();
-    renderChart(data);
-}
+document.addEventListener("click", (event) => {
+    if (event.target.classList.contains("addBtn")) {
+        const name = event.target.dataset.name;
+        const sales = parseFloat(event.target.dataset.sales);
+
+        selectedGames.push({ name, sales });
+        renderChart(selectedGames);
+    }
+});
 
 // -------------------------------
-// ON LOAD
+// SORTING
+// -------------------------------
+document.querySelectorAll("#gamesTable th[data-sort]").forEach(th => {
+    th.addEventListener("click", () => {
+        const newSort = th.dataset.sort;
+        if (sort === newSort) {
+            order = order === "ASC" ? "DESC" : "ASC";
+        } else {
+            sort = newSort;
+            order = "ASC";
+        }
+        loadGames();
+    });
+});
+
+// -------------------------------
+// PAGINATION
+// -------------------------------
+document.getElementById("prevPage").onclick = () => {
+    if (page > 1) {
+        page--;
+        loadGames();
+    }
+};
+
+document.getElementById("nextPage").onclick = () => {
+    page++;
+    loadGames();
+};
+
+// -------------------------------
+// INIT
 // -------------------------------
 window.onload = async () => {
     await loadFilters();
-    updateDashboard(); // initial
+    await loadGames();
+    const initial = await loadSalesData();
+
+    // Format initial data for dynamic chart
+    selectedGames = initial.map(d => ({ name: d.name, sales: d.salesValue }));
+    renderChart(selectedGames);
 };
 
-update.addEventListener("click", updateDashboard);
+update.addEventListener("click", async () => {
+    const updated = await loadSalesData();
+    selectedGames = updated.map(d => ({ name: d.name, sales: d.salesValue }));
+    renderChart(selectedGames);
+});
