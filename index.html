@@ -52,7 +52,7 @@
 
     .chart-container {
       max-width: 900px;
-      margin: 0 auto;
+      margin: 0 auto 30px;
       background: white;
       padding: 20px;
       border-radius: 8px;
@@ -63,8 +63,37 @@
       width: 100% !important;
       height: 400px !important;
     }
-  </style>
 
+    .table-container {
+      max-width: 900px;
+      margin: 20px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    #gamesTable {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    #gamesTable th, #gamesTable td {
+      text-align: left;
+      padding: 8px;
+      border-bottom: 1px solid #eee;
+    }
+
+    #gamesTable th {
+      cursor: pointer;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      padding-top: 10px;
+    }
+  </style>
 </head>
 
 <body>
@@ -80,6 +109,29 @@
 
   <div class="chart-container">
     <canvas id="salesChart"></canvas>
+  </div>
+
+  <div class="table-container">
+    <input id="search" placeholder="Search games..." />
+
+    <table id="gamesTable">
+      <thead>
+        <tr>
+          <th data-sort="name">Name</th>
+          <th data-sort="platform">Platform</th>
+          <th data-sort="genre">Genre</th>
+          <th data-sort="sales">Sales</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="pagination">
+      <button id="prevPage">Previous</button>
+      <span id="pageInfo"></span>
+      <button id="nextPage">Next</button>
+    </div>
   </div>
 
   <script src="script.js"></script>
