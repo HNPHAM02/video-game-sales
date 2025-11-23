@@ -9,6 +9,8 @@ When attempting to populate RawData, first replace "GET UR OWN FILE DIRECTORY" w
 - Use Table Data Import Wizard to import data for ETL to run.
 If data import initially fails, run only the script afterwards again, starting from `INSERT INTO Platforms (name)`.
 
+If you are running om something like Railway.app, after running the ETL locally, export the DB: MySQL Workbench → Server → Data Export → SQL File and import it.
+
 ### 2. Deploy the backend.
 
 Start by installing Python, and running `Run the following in cmd: pip install flask flask-cors mysql-connector-python` in cmd.
