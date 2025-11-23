@@ -1,4 +1,4 @@
-const api = "http://127.0.0.1/";
+const api = "https://video-game-sales-production.up.railway.app/";
 
 // -------------------------------
 // HTML ELEMENTS
