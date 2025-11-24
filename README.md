@@ -15,7 +15,7 @@ When attempting to populate RawData, first replace "GET UR OWN FILE DIRECTORY" w
 
 If data import initially fails, run only the script afterwards again, starting from `INSERT INTO Platforms (name)`.
 
-If you are running om something like Railway.app, after running the ETL locally, export the DB: MySQL Workbench → Server → Data Export → SQL File and import it.
+If you are running om something like Railway.app, after running the ETL locally, export the DB: MySQL Workbench → Server → Data Export → SQL File and import it. If this doesn't work, you may try to run the process entirely on your cloud service (it is possible you may have to run force_rawdata.sql).
 
 ### 2. Deploy the backend.
 
