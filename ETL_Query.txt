@@ -87,7 +87,38 @@ INTO TABLE RawData
 FIELDS TERMINATED BY ','
 ENCLOSED BY '"'
 LINES TERMINATED BY '\n'
-IGNORE 1 ROWS;
+IGNORE 1 ROWS
+(
+    @Name,
+    @Platform,
+    @Year_of_Release,
+    @Genre,
+    @Publisher,
+    @NA_Sales,
+    @EU_Sales,
+    @JP_Sales,
+    @Other_Sales,
+    @Global_Sales,
+    @Critic_score,
+    @User_score,
+    @Developer,
+    @Rating
+)
+SET
+    Name = NULLIF(@Name,'NULL'),
+    Platform = NULLIF(@Platform,'NULL'),
+    Year_of_Release = NULLIF(@Year_of_Release,'NULL'),
+    Genre = NULLIF(@Genre,'NULL'),
+    Publisher = NULLIF(@Publisher,'NULL'),
+    NA_Sales = NULLIF(@NA_Sales,'NULL'),
+    EU_Sales = NULLIF(@EU_Sales,'NULL'),
+    JP_Sales = NULLIF(@JP_Sales,'NULL'),
+    Other_Sales = NULLIF(@Other_Sales,'NULL'),
+    Global_Sales = NULLIF(@Global_Sales,'NULL'),
+    Critic_score = NULLIF(@Critic_score,'NULL'),
+    User_score = NULLIF(@User_score,'NULL'),
+    Developer = NULLIF(@Developer,'NULL'),
+    Rating = NULLIF(@Rating,'NULL');
 
 -- If the previous line errors, use data import wizard, and then run the following:
 
@@ -151,5 +182,6 @@ SELECT
     Rating
 FROM Games
 JOIN RawData ON Games.name = RawData.Name;
+
 
 
