@@ -86,7 +86,7 @@ LOAD DATA INFILE 'GET UR OWN FILE DIRECTORY'
 INTO TABLE RawData
 FIELDS TERMINATED BY ','
 ENCLOSED BY '"'
-LINES TERMINATED BY '\n'
+LINES TERMINATED BY '\r\n' --Replace \r\n with \n for non-windows CSVs
 IGNORE 1 ROWS
 (
     @Name,
@@ -182,6 +182,7 @@ SELECT
     Rating
 FROM Games
 JOIN RawData ON Games.name = RawData.Name;
+
 
 
 
