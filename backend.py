@@ -61,7 +61,7 @@ def get_sales():
             g.name AS name,
             p.name AS platform,
             s.region AS region,
-            s.salesValue AS salesValue
+            s.salesValue AS sales
         FROM Sales s
         JOIN Games g ON s.gameID = g.gameID
         JOIN Platforms p ON g.platformID = p.platformID
@@ -160,6 +160,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
