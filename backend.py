@@ -130,7 +130,7 @@ def get_games():
         FROM Games g
         JOIN Platforms p ON g.platformID = p.platformID
         JOIN Genres ge ON g.genreID = ge.genreID
-        LEFT JOIN Sales s ON g.gameID = s.gameID
+        LEFT JOIN Sales s ON g.gameID = s.gameID AND s.region = 'Global'
         WHERE g.name LIKE %s
         ORDER BY {sort} {order}
         LIMIT %s OFFSET %s
@@ -159,6 +159,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
