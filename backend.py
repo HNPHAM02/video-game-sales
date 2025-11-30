@@ -126,13 +126,12 @@ def get_games():
             g.name AS name,
             p.name AS platform,
             ge.name AS genre,
-            COALESCE(SUM(s.salesValue), 0) AS sales
+            COALESCE(s.salesValue, 0) AS sales
         FROM Games g
         JOIN Platforms p ON g.platformID = p.platformID
         JOIN Genres ge ON g.genreID = ge.genreID
         LEFT JOIN Sales s ON g.gameID = s.gameID
         WHERE g.name LIKE %s
-        GROUP BY g.gameID
         ORDER BY {sort} {order}
         LIMIT %s OFFSET %s
     """
@@ -160,6 +159,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
