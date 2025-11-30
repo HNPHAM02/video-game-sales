@@ -87,6 +87,7 @@ def get_sales():
     # finish sql
     sql += """
         ORDER BY s.salesValue DESC
+        LIMIT 20;
     """
 
     cur.execute(sql, params)
@@ -159,6 +160,7 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
+
 
 
 
