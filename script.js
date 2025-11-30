@@ -210,7 +210,7 @@ window.onload = async () => {
     const initial = await loadSalesData();
     selectedGames = initial.map(d => ({
         name: d.name,
-        sales: d.salesValue
+        sales: d.sales
     }));
 
     renderChart(selectedGames);
@@ -220,7 +220,7 @@ update.addEventListener("click", async () => {
     const updated = await loadSalesData();
     selectedGames = updated.map(d => ({
         name: d.name,
-        sales: d.salesValue
+        sales: d.sales
     }));
     renderChart(selectedGames);
 });
