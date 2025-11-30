@@ -46,6 +46,7 @@ def get_platforms():
 
     return jsonify(platforms)
     
+# get sales
 @app.route("/sales")
 def get_sales():
     region = request.args.get("region")
@@ -59,9 +60,7 @@ def get_sales():
     sql = """
         SELECT 
             g.name AS name,
-            p.name AS platform,
-            s.region AS region,
-            s.salesValue AS sales
+            SUM(s.salesValue) AS salesValue
         FROM Sales s
         JOIN Games g ON s.gameID = g.gameID
         JOIN Platforms p ON g.platformID = p.platformID
@@ -69,7 +68,7 @@ def get_sales():
         WHERE 1 = 1
     """
 
-    # WHERE 1= 1 AND following conditions
+    # WHERE 1 = 1 AND following conditions
     params = {}
 
     if region:
@@ -84,9 +83,10 @@ def get_sales():
         sql += " AND ge.name = %(genre)s"
         params["genre"] = genre
 
-    # finish sql
+    # group
     sql += """
-        ORDER BY s.salesValue DESC
+        GROUP BY g.gameID
+        ORDER BY salesValue DESC
         LIMIT 20;
     """
 
@@ -97,7 +97,6 @@ def get_sales():
     conn.close()
 
     return jsonify(rows)
-
 
 # full game rows (page sort)
 @app.route("/games")
@@ -126,12 +125,13 @@ def get_games():
             g.name AS name,
             p.name AS platform,
             ge.name AS genre,
-            COALESCE(s.salesValue, 0) AS sales
+            COALESCE(SUM(s.salesValue), 0) AS sales
         FROM Games g
         JOIN Platforms p ON g.platformID = p.platformID
         JOIN Genres ge ON g.genreID = ge.genreID
-        LEFT JOIN Sales s ON g.gameID = s.gameID AND s.region = 'Global'
+        LEFT JOIN Sales s ON g.gameID = s.gameID
         WHERE g.name LIKE %s
+        GROUP BY g.gameID
         ORDER BY {sort} {order}
         LIMIT %s OFFSET %s
     """
@@ -159,13 +159,6 @@ def home():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
-
-
-
-
-
-
-
 
 
 
