@@ -1,8 +1,9 @@
 CSE335 group project on video game sales.
 
+Link to webpage:
 https://hnpham02.github.io/video-game-sales/
 
-BACKEND will only be running for 30 days after 11/23/2025, during my trial period of Railway.app.
+Trial period of Railway.app has used all of its resources, killing the backend, the html and js will still render as expected, but no data will load, as the sql server and python backend are not sending any data.
 
 ## For running locally:
 
